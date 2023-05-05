@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  currency      String
+  refreshToken  String?   
+  invoices      Invoice[]
+  task          Task[]
+  senderEmails  SenderEmail[]
+  labels        Label[]
+}
+
+model SenderEmail {
+  id            String      @id @default(uuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  emailAddress  String
+  labels        Label[]
+}
+
+model Label {
+  id            String      @id @default(uuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  senderEmailId String?
+  senderEmail   SenderEmail? @relation(fields: [senderEmailId], references: [id])
+  value         String
+  color         String
+}
+
+model Invoice {
+  id            String      @id @default(uuid())
+  emailId       String
+  amount        Float
+  label         Label[]
+  otherAmounts  Float[]
+  isValid       Boolean
+  userId        String
+  datetime      DateTime
+  created       DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id])
+}
+
+model Task {
+  id            String   @id @default(uuid())
+  schedule      String  // e.g. "0 0 * * *"
+  timezone      String  // e.g. "America/New_York"
+  userId        String
+  isActive      Boolean
+  senderEmail   String[]
+  user          User     @relation(fields: [userId], references: [id])
+}

@@ -1,41 +1,23 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { OAuth2Client } from 'google-auth-library';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
+  constructor(private authService: AuthService) {}
   @Get('url')
-  async getAuthUrl(): Promise<string> {
-    const oAuth2Client = new OAuth2Client({
-      clientId: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
-      redirectUri: 'http://localhost:3000/auth/callback',
-    });
-
-    const authUrl = oAuth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: [
-        'https://www.googleapis.com/auth/gmail.readonly',
-        'https://www.googleapis.com/auth/gmail.labels',
-      ],
-    });
-
-    return authUrl;
+  async getAuthUrl(@Query('userId') userId: string): Promise<string> {
+    return this.authService.generateAuthUrl(userId);
   }
   @Get('callback')
-  async callback(@Query('code') code: string): Promise<string> {
-    const oAuth2Client = new OAuth2Client({
-      clientId: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
-      redirectUri: 'http://localhost:3000/auth/callback',
-    });
-
-    const { tokens } = await oAuth2Client.getToken(code);
-    const accessToken = tokens.access_token;
-    const refreshToken = tokens.refresh_token;
-    oAuth2Client.setCredentials({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    });
-    return accessToken;
+  async callback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+  ): Promise<void> {
+    return this.authService.handleCallback(code, state);
+  }
+  @Get('register')
+  async register(): Promise<string> {
+    const user = await this.authService.generateTestUser();
+    return user.id;
   }
 }

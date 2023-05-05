@@ -17,7 +17,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "generate": "rm -rf ./node_modules/@prisma/client && npx prisma generate"
   },
   "dependencies": {
     "@jrmdayn/googleapis-batcher": "^0.3.0",
@@ -25,8 +26,13 @@
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
+    "@prisma/client": "4.13.0",
+    "@types/dinero.js": "^1.9.0",
+    "dinero.js": "^1.9.1",
     "google-auth-library": "^8.7.0",
     "googleapis": "^118.0.0",
+    "prisma": "^4.13.0",
+    "redis": "^4.6.6",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0"
   },

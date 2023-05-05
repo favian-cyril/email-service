@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "refreshToken" DROP NOT NULL,
+ALTER COLUMN "schedule" DROP NOT NULL,
+ALTER COLUMN "timezone" DROP NOT NULL;
