@@ -1,11 +1,18 @@
-import { Invoice } from '@prisma/client';
 import { gmail_v1 } from 'googleapis';
+
+interface EmailData {
+  emailId: string;
+  amount: number;
+  otherAmounts: number[];
+  senderEmailAddress: string;
+  emailCreated: Date;
+  currency: string;
+}
 
 export function parseEmailsForInvoiceAmounts(
   email: gmail_v1.Schema$Message,
   currency: string,
-  userId?: string,
-): Invoice | null {
+): EmailData | null {
   // Extract the email body depending on the content type
   let emailBody = '';
   if (email.payload.mimeType === 'text/plain') {
@@ -39,15 +46,34 @@ export function parseEmailsForInvoiceAmounts(
     const estimatedAmount = Math.max(...floatValues);
     return {
       emailId: email.id,
+      senderEmailAddress: getSenderEmailAddress(email.payload),
+      emailCreated: new Date(email.internalDate),
       amount: estimatedAmount,
       otherAmounts: floatValues,
-      label: [],
-      isValid: true,
-      userId,
+      currency,
     };
   } else {
     return null;
   }
+}
+
+export function getSenderEmailAddress(payload: gmail_v1.Schema$MessagePart) {
+  const headers = payload.headers;
+
+  // Find the "From" header
+  const fromHeader = headers.find(
+    (header) => header.name.toLowerCase() === 'from',
+  );
+
+  if (!fromHeader) {
+    return null;
+  }
+
+  // Extract the email address using a regular expression
+  const emailRegex = /[^@<\s]+@[^@\s>]+/;
+  const match = fromHeader.value.match(emailRegex);
+
+  return match ? match[0] : null;
 }
 
 export function generateGmailQueryString(

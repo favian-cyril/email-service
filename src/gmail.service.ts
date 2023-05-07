@@ -4,13 +4,15 @@ import { batchFetchImplementation } from '@jrmdayn/googleapis-batcher';
 import { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from './prisma.service';
 import { RedisService } from './redis.service';
-import { Invoice } from '@prisma/client';
+import { Invoice, Label } from '@prisma/client';
 import {
   generateGmailQueryString,
   parseEmailsForInvoiceAmounts,
 } from './utils/mail-parser';
 
 const fetchImplementation = batchFetchImplementation();
+
+type InvoiceInput = Omit<Invoice, 'id'> & { labels: Label[] };
 
 @Injectable()
 export class GmailService {
@@ -24,11 +26,7 @@ export class GmailService {
     );
   }
 
-  async getInbox(
-    userId: string,
-    currency: string,
-    senderEmail: string[],
-  ): Promise<Invoice[]> {
+  async getInbox(userId: string): Promise<void> {
     const token = await this.redis.getAccessToken(userId);
     this.oauth2Client.setCredentials({
       access_token: token,
@@ -39,18 +37,40 @@ export class GmailService {
       fetchImplementation,
     });
 
-    const result: Invoice[] = [];
+    const result: InvoiceInput[] = [];
+
+    const { currency, senderEmails } = await this.prisma.user.findFirst({
+      where: {
+        id: userId,
+      },
+      include: {
+        senderEmails: true,
+      },
+    });
+    const senderEmailIds = senderEmails.map((i) => i.id);
+    const allSenderEmails = await this.prisma.senderEmail.findMany({
+      where: {
+        id: {
+          in: senderEmailIds,
+        },
+      },
+      include: {
+        labels: true,
+      },
+    });
 
     await gmailClient.users.messages
       .list({
         userId: 'me',
-        q: generateGmailQueryString(senderEmail, new Date(), [
-          'invoice',
-          'receipt',
-        ]),
+        q: generateGmailQueryString(
+          allSenderEmails.map((i) => i.email),
+          new Date('2023/05/06'),
+          ['invoice', 'receipt'],
+        ),
       })
       .then((response) => {
         // Construct an array of requests to retrieve the contents of each message
+        console.log(response);
         const requests = response.data.messages.map((message) => {
           return gmailClient.users.messages.get({
             userId: 'me',
@@ -62,8 +82,20 @@ export class GmailService {
       .then((responses) => {
         // Iterate through the responses and print the contents of each email
         responses.forEach(({ data }) => {
-          const invoice = parseEmailsForInvoiceAmounts(data, currency, userId);
-          if (invoice) result.push(invoice);
+          const invoice = parseEmailsForInvoiceAmounts(data, currency);
+          const sender = allSenderEmails.find(
+            (email) => invoice.senderEmailAddress === email.email,
+          );
+          if (invoice)
+            result.push({
+              currency,
+              senderEmailId: sender.id,
+              isValid: true,
+              userId,
+              labels: sender.labels,
+              created: new Date(),
+              ...invoice,
+            });
         });
       })
       .catch((err) => {
@@ -73,6 +105,5 @@ export class GmailService {
     await this.prisma.invoice.createMany({
       data: result,
     });
-    return result;
   }
 }

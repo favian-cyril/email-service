@@ -47,12 +47,36 @@ export class AuthService {
   }
 
   async generateTestUser() {
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         email: 'test@gmail.com',
-        name: 'test',
+        firstName: 'test',
+        lastName: 'test',
         currency: 'Rp',
+        labels: {
+          create: [{ value: 'test label', color: '#ffffff' }],
+        },
+        senderEmails: {
+          create: [
+            {
+              email: 'no-reply@grab.com',
+            },
+          ],
+        },
+      },
+      include: {
+        senderEmails: true,
+        labels: true,
       },
     });
+    await this.prisma.senderEmail.update({
+      where: { id: user.senderEmails[0].id },
+      data: {
+        labels: {
+          set: user.labels,
+        },
+      },
+    });
+    return user;
   }
 }

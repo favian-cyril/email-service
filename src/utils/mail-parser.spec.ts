@@ -12,7 +12,7 @@ describe('parseEmailsForInvoiceAmounts', () => {
         },
       },
     };
-    expect(parseEmailsForInvoiceAmounts(email, '$', 'foo').amount).toBe(2500.0);
+    expect(parseEmailsForInvoiceAmounts(email, '$').amount).toBe(2500.0);
   });
   it('should return all amounts in number from email body for no decimals', () => {
     const dataBuf = Buffer.from('Your total amount is Rp 2.500');
@@ -25,9 +25,7 @@ describe('parseEmailsForInvoiceAmounts', () => {
         },
       },
     };
-    expect(parseEmailsForInvoiceAmounts(email, 'Rp', 'foo').amount).toBe(
-      2500.0,
-    );
+    expect(parseEmailsForInvoiceAmounts(email, 'Rp').amount).toBe(2500.0);
   });
   it('should return all other values but selectes the max as value', () => {
     const dataBuf = Buffer.from(
@@ -42,7 +40,7 @@ describe('parseEmailsForInvoiceAmounts', () => {
         },
       },
     };
-    const res = parseEmailsForInvoiceAmounts(email, '$', 'foo');
+    const res = parseEmailsForInvoiceAmounts(email, '$');
     expect(res.amount).toBe(2500.0);
     expect(res.otherAmounts).toMatchObject([2500.0, 2111.0]);
   });
