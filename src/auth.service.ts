@@ -56,24 +56,23 @@ export class AuthService {
         labels: {
           create: [{ value: 'test label', color: '#ffffff' }],
         },
-        senderEmails: {
-          create: [
-            {
-              email: 'no-reply@grab.com',
-            },
-          ],
-        },
       },
       include: {
-        senderEmails: true,
         labels: true,
       },
     });
-    await this.prisma.senderEmail.update({
-      where: { id: user.senderEmails[0].id },
+    await this.prisma.senderEmail.create({
       data: {
+        email: 'no-reply@grab.com',
+        user: {
+          connect: {
+            id: user.id,
+          },
+        },
         labels: {
-          set: user.labels,
+          connect: {
+            id: user.labels[0].id,
+          },
         },
       },
     });

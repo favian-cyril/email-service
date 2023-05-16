@@ -11,61 +11,64 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(uuid())
-  email        String        @unique
-  firstName    String
-  lastName     String
-  currency     String
-  refreshToken String?
-  invoices     Invoice[]
-  task         Task[]
-  senderEmails SenderEmail[]
-  labels       Label[]
+  id                 String        @id @default(uuid())
+  email              String        @unique
+  firstName          String
+  lastName           String
+  currency           String
+  refreshToken       String?
+  additionalKeywords String[]
+  invoices           Invoice[]
+  task               Task[]
+  senderEmails       SenderEmail[]
+  labels             Label[]
 }
 
 model SenderEmail {
-  id        String    @id @default(uuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id])
-  email     String
-  labels Label[]
-  invoice   Invoice[]
+  id      String    @id @default(uuid())
+  userId  String
+  user    User      @relation(fields: [userId], references: [id])
+  email   String
+  labelId String
+  label   Label     @relation(fields: [labelId], references: [id])
+  invoice Invoice[]
 
   @@unique([id, email])
 }
 
 model Label {
-  id           String    @id @default(uuid())
-  userId       String
-  user         User      @relation(fields: [userId], references: [id])
-  senderEmails SenderEmail[]
-  value        String
-  color        String
-  invoices     Invoice[]
+  id          String        @id @default(uuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  senderEmail SenderEmail[]
+  value       String
+  color       String
+  invoices    Invoice[]
 }
 
 model Invoice {
-  id                 String      @id @default(uuid())
-  emailId            String
-  amount             Float
-  labels             Label[]
-  otherAmounts       Float[]
-  senderEmailAddress String
-  currency           String
-  senderEmailId      String
-  senderEmail        SenderEmail @relation(fields: [senderEmailId, senderEmailAddress], references: [id, email])
-  isValid            Boolean
-  userId             String
-  emailCreated       DateTime
-  created            DateTime    @default(now())
-  user               User        @relation(fields: [userId], references: [id])
+  id            String      @id @default(uuid())
+  emailId       String
+  amount        Float
+  labels        Label[]
+  otherAmounts  Float[]
+  emailContent  String
+  summary       String
+  currency      String
+  senderEmailId String
+  senderEmail   SenderEmail @relation(fields: [senderEmailId], references: [id])
+  isValid       Boolean
+  userId        String
+  emailCreated  DateTime
+  created       DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id])
 }
 
 model Task {
-  id          String   @id @default(uuid())
-  schedule    String // e.g. "0 0 * * *"
-  timezone    String // e.g. "America/New_York"
-  userId      String
-  isActive    Boolean
-  user        User     @relation(fields: [userId], references: [id])
+  id       String  @id @default(uuid())
+  schedule String // e.g. "0 0 * * *"
+  timezone String // e.g. "America/New_York"
+  userId   String
+  isActive Boolean
+  user     User    @relation(fields: [userId], references: [id])
 }

@@ -4,7 +4,7 @@ import { batchFetchImplementation } from '@jrmdayn/googleapis-batcher';
 import { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from './prisma.service';
 import { RedisService } from './redis.service';
-import { Invoice, Label } from '@prisma/client';
+import { Invoice } from '@prisma/client';
 import {
   generateGmailQueryString,
   parseEmailsForInvoiceAmounts,
@@ -12,7 +12,14 @@ import {
 
 const fetchImplementation = batchFetchImplementation();
 
-type InvoiceInput = Omit<Invoice, 'id'> & { labels: Label[] };
+type InvoiceInput = Omit<
+  Invoice,
+  'id' | 'senderEmailAddress' | 'senderEmailId' | 'userId'
+> & { labels: { connect: { id: string }[] } } & {
+  senderEmail: { connect: { id: string } };
+} & {
+  user: { connect: { id: string } };
+};
 
 @Injectable()
 export class GmailService {
@@ -39,23 +46,21 @@ export class GmailService {
 
     const result: InvoiceInput[] = [];
 
-    const { currency, senderEmails } = await this.prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-      include: {
-        senderEmails: true,
-      },
-    });
+    const { currency, senderEmails, additionalKeywords } =
+      await this.prisma.user.findFirst({
+        where: {
+          id: userId,
+        },
+        include: {
+          senderEmails: true,
+        },
+      });
     const senderEmailIds = senderEmails.map((i) => i.id);
     const allSenderEmails = await this.prisma.senderEmail.findMany({
       where: {
         id: {
           in: senderEmailIds,
         },
-      },
-      include: {
-        labels: true,
       },
     });
 
@@ -64,8 +69,8 @@ export class GmailService {
         userId: 'me',
         q: generateGmailQueryString(
           allSenderEmails.map((i) => i.email),
-          new Date('2023/05/06'),
-          ['invoice', 'receipt'],
+          new Date(),
+          ['invoice', 'receipt', ...additionalKeywords],
         ),
       })
       .then((response) => {
@@ -83,27 +88,44 @@ export class GmailService {
         // Iterate through the responses and print the contents of each email
         responses.forEach(({ data }) => {
           const invoice = parseEmailsForInvoiceAmounts(data, currency);
-          const sender = allSenderEmails.find(
-            (email) => invoice.senderEmailAddress === email.email,
-          );
-          if (invoice)
+          let sender;
+          if (invoice) {
+            sender = allSenderEmails.find(
+              (email) => invoice.senderEmailAddress === email.email,
+            );
+            // delete because only sender id is needed
+            delete invoice.senderEmailAddress;
             result.push({
               currency,
-              senderEmailId: sender.id,
+              senderEmail: {
+                connect: {
+                  id: sender.id,
+                },
+              },
               isValid: true,
-              userId,
-              labels: sender.labels,
+              user: {
+                connect: {
+                  id: userId,
+                },
+              },
+              labels: {
+                connect: [
+                  {
+                    id: sender.labelId,
+                  },
+                ],
+              },
               created: new Date(),
               ...invoice,
             });
+          }
         });
       })
       .catch((err) => {
         console.error('The API returned an error:', err);
       });
-    console.log(result);
-    await this.prisma.invoice.createMany({
-      data: result,
-    });
+    await Promise.all(
+      result.map((invoice) => this.prisma.invoice.create({ data: invoice })),
+    );
   }
 }

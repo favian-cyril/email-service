@@ -1,4 +1,5 @@
 import { gmail_v1 } from 'googleapis';
+import { convert } from 'html-to-text';
 
 interface EmailData {
   emailId: string;
@@ -6,6 +7,8 @@ interface EmailData {
   otherAmounts: number[];
   senderEmailAddress: string;
   emailCreated: Date;
+  summary: string;
+  emailContent: string;
   currency: string;
 }
 
@@ -19,7 +22,7 @@ export function parseEmailsForInvoiceAmounts(
     emailBody = email.payload.body.data;
   } else if (email.payload.mimeType === 'multipart/alternative') {
     const part = email.payload.parts.find(
-      (part) => part.mimeType === 'text/plain',
+      (part) => part.mimeType === 'text/html',
     );
     if (part) {
       emailBody = part.body.data;
@@ -35,7 +38,13 @@ export function parseEmailsForInvoiceAmounts(
     `(${currencyLiteral})\\s*([\\d,\\.]+(?:\\.\\d{1,2})?)`,
     'g',
   );
-  const match = decodedBody.match(regex);
+  const htmlText = convert(decodedBody, {
+    selectors: [
+      { selector: 'a', format: 'skip' },
+      { selector: 'img', format: 'skip' },
+    ],
+  });
+  const match = htmlText.match(regex);
   if (match) {
     const floatValues = match.map((val) => {
       const captureRegex = new RegExp(`[${currencyLiteral},.]`, 'g');
@@ -47,7 +56,9 @@ export function parseEmailsForInvoiceAmounts(
     return {
       emailId: email.id,
       senderEmailAddress: getSenderEmailAddress(email.payload),
-      emailCreated: new Date(email.internalDate),
+      emailCreated: new Date(Number(email.internalDate)),
+      summary: email.snippet,
+      emailContent: htmlText,
       amount: estimatedAmount,
       otherAmounts: floatValues,
       currency,
@@ -86,7 +97,9 @@ export function generateGmailQueryString(
   }
 
   const fromQueries = emailAddresses.map((email) => `from:${email}`);
-  const keywordsQuery = keywords.map((keyword) => `("${keyword}")`).join(' ');
+  const keywordsQuery = keywords
+    .map((keyword) => `subject:${keyword}`)
+    .join(' OR ');
 
   // Format the fromDate as a string
   const formattedFromDate = fromDate.toISOString().split('T')[0];
