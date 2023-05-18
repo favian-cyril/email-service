@@ -6,18 +6,11 @@ import { AuthController } from './auth.controller';
 import { GmailController } from './gmail.controller';
 import { GmailService } from './gmail.service';
 import { AuthService } from './auth.service';
-import { RedisService } from './redis.service';
 import { PrismaService } from './prisma.service';
 
 @Module({
   imports: [ConfigModule.forRoot()],
   controllers: [AppController, AuthController, GmailController],
-  providers: [
-    AppService,
-    GmailService,
-    AuthService,
-    RedisService,
-    PrismaService,
-  ],
+  providers: [AppService, GmailService, AuthService, PrismaService],
 })
 export class AppModule {}

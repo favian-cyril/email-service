@@ -38,26 +38,44 @@ export function parseEmailsForInvoiceAmounts(
     `(${currencyLiteral})\\s*([\\d,\\.]+(?:\\.\\d{1,2})?)`,
     'g',
   );
+
+  const getNumberValue = (val: string): number => {
+    const captureRegex = new RegExp(`[${currencyLiteral},.]`, 'g');
+    const numberStr = val.replace(/(\.00)$/, '').replace(captureRegex, '');
+    return parseFloat(numberStr);
+  };
   const htmlText = convert(decodedBody, {
     selectors: [
-      { selector: 'a', format: 'skip' },
+      { selector: 'a', options: { ignoreHref: true } },
       { selector: 'img', format: 'skip' },
     ],
   });
+
+  const summary = email.snippet;
+  const summaryMatch = summary.match(regex);
   const match = htmlText.match(regex);
-  if (match) {
-    const floatValues = match.map((val) => {
-      const captureRegex = new RegExp(`[${currencyLiteral},.]`, 'g');
-      const numberStr = val.replace(/(\.00)$/, '').replace(captureRegex, '');
-      return parseFloat(numberStr);
-    });
-    // Try to get total amount by getting max value, might not be accurate so store other values also
+  if (summaryMatch) {
+    const floatValues = summaryMatch.map(getNumberValue);
     const estimatedAmount = Math.max(...floatValues);
     return {
       emailId: email.id,
       senderEmailAddress: getSenderEmailAddress(email.payload),
       emailCreated: new Date(Number(email.internalDate)),
-      summary: email.snippet,
+      summary,
+      emailContent: htmlText,
+      amount: estimatedAmount,
+      otherAmounts: floatValues,
+      currency,
+    };
+  } else if (match) {
+    const floatValues = match.map(getNumberValue);
+    // Try to get total amount by getting highest count value, and getting the bigger value
+    const estimatedAmount = findHighestCount(floatValues);
+    return {
+      emailId: email.id,
+      senderEmailAddress: getSenderEmailAddress(email.payload),
+      emailCreated: new Date(Number(email.internalDate)),
+      summary,
       emailContent: htmlText,
       amount: estimatedAmount,
       otherAmounts: floatValues,
@@ -109,4 +127,24 @@ export function generateGmailQueryString(
     ' OR ',
   )} ${keywordsQuery} ${fromDateQuery}`;
   return queryString.trim();
+}
+
+function findHighestCount(numbers: number[]): number {
+  const counts = new Map();
+
+  for (const number of numbers) {
+    counts.set(number, (counts.get(number) || 0) + 1);
+  }
+
+  let maxCount = 0;
+  let maxValue = -Infinity;
+
+  for (const [number, count] of counts.entries()) {
+    if (count > maxCount || (count === maxCount && number > maxValue)) {
+      maxCount = count;
+      maxValue = number;
+    }
+  }
+
+  return maxValue;
 }

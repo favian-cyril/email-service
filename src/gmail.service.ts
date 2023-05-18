@@ -3,12 +3,12 @@ import { google } from 'googleapis';
 import { batchFetchImplementation } from '@jrmdayn/googleapis-batcher';
 import { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from './prisma.service';
-import { RedisService } from './redis.service';
 import { Invoice } from '@prisma/client';
 import {
   generateGmailQueryString,
   parseEmailsForInvoiceAmounts,
 } from './utils/mail-parser';
+import { AuthService } from './auth.service';
 
 const fetchImplementation = batchFetchImplementation();
 
@@ -25,7 +25,7 @@ type InvoiceInput = Omit<
 export class GmailService {
   private oauth2Client: OAuth2Client;
 
-  constructor(private prisma: PrismaService, private redis: RedisService) {
+  constructor(private prisma: PrismaService, private auth: AuthService) {
     this.oauth2Client = new OAuth2Client(
       process.env.CLIENT_ID,
       process.env.CLIENT_SECRET,
@@ -33,11 +33,12 @@ export class GmailService {
     );
   }
 
-  async getInbox(userId: string): Promise<void> {
-    const token = await this.redis.getAccessToken(userId);
+  async getInbox(email: string, userId: string): Promise<void> {
+    const token = await this.auth.getAccessToken(email);
     this.oauth2Client.setCredentials({
-      access_token: token,
+      refresh_token: token,
     });
+    await this.oauth2Client.refreshAccessToken();
     const gmailClient = google.gmail({
       version: 'v1',
       auth: this.oauth2Client,
@@ -75,7 +76,8 @@ export class GmailService {
       })
       .then((response) => {
         // Construct an array of requests to retrieve the contents of each message
-        console.log(response);
+        if (!response.data.messages.length)
+          return Promise.reject('no-new-mail');
         const requests = response.data.messages.map((message) => {
           return gmailClient.users.messages.get({
             userId: 'me',
@@ -122,7 +124,8 @@ export class GmailService {
         });
       })
       .catch((err) => {
-        console.error('The API returned an error:', err);
+        if (err === 'no-new-mail') console.warn('No new mail detected');
+        else console.error('The API returned an error:', err);
       });
     await Promise.all(
       result.map((invoice) => this.prisma.invoice.create({ data: invoice })),

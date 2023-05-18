@@ -15,9 +15,10 @@ model User {
   email              String        @unique
   firstName          String
   lastName           String
+  password           String
   currency           String
-  refreshToken       String?
   additionalKeywords String[]
+  userEmails         UserEmails[]
   invoices           Invoice[]
   task               Task[]
   senderEmails       SenderEmail[]
@@ -71,4 +72,12 @@ model Task {
   userId   String
   isActive Boolean
   user     User    @relation(fields: [userId], references: [id])
+}
+
+model UserEmails {
+  id           String @id @default(uuid())
+  email        String @unique
+  refreshToken String
+  userId       String
+  user         User   @relation(fields: [userId], references: [id])
 }

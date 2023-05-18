@@ -6,7 +6,10 @@ export class GmailController {
   constructor(private readonly gmailService: GmailService) {}
 
   @Get()
-  async getInbox(@Query('userId') userId: string): Promise<void> {
-    await this.gmailService.getInbox(userId);
+  async getInbox(
+    @Query('email') email: string,
+    @Query('userId') userId: string,
+  ): Promise<void> {
+    await this.gmailService.getInbox(email, userId);
   }
 }
