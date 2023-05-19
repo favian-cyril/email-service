@@ -10,29 +10,25 @@ import { OAuth2Client } from 'google-auth-library';
 import {
   generateGmailQueryString,
   parseEmailsForInvoiceAmounts,
-} from './mail-parser';
-import { decrypt } from './tokenEncrypt';
+} from '../utils/mail-parser';
+import { decrypt } from '../utils/tokenEncrypt';
 
 const prisma = new PrismaClient();
 
 async function getInbox() {
-  const { userId, email } = workerData;
-  const oauth2Client = new OAuth2Client(
-    process.env.CLIENT_ID,
-    process.env.CLIENT_SECRET,
-    process.env.REDIRECT_URL,
-  );
-  const { refreshToken } = await this.prisma.userEmails.findFirst({
+  const { userId, email, clientId, clientSecret, redirectUrl } = workerData;
+  const oauth2Client = new OAuth2Client(clientId, clientSecret, redirectUrl);
+  const { refreshToken } = await prisma.userEmails.findFirst({
     where: { email: email },
   });
   const token = decrypt(refreshToken);
   oauth2Client.setCredentials({
     refresh_token: token,
   });
-  await this.oauth2Client.refreshAccessToken();
+  await oauth2Client.refreshAccessToken();
   const gmailClient = google.gmail({
     version: 'v1',
-    auth: this.oauth2Client,
+    auth: oauth2Client,
     fetchImplementation,
   });
 
@@ -118,7 +114,7 @@ async function getInbox() {
       else console.error('The API returned an error:', err);
     });
   await Promise.all(
-    result.map((invoice) => this.prisma.invoice.create({ data: invoice })),
+    result.map((invoice) => prisma.invoice.create({ data: invoice })),
   );
 }
 
