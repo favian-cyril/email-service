@@ -66,12 +66,14 @@ model Invoice {
 }
 
 model Task {
-  id       String  @id @default(uuid())
-  schedule String // e.g. "0 0 * * *"
-  timezone String // e.g. "America/New_York"
-  userId   String
-  isActive Boolean
-  user     User    @relation(fields: [userId], references: [id])
+  id               String     @id @default(uuid())
+  schedule         String // e.g. "0 0 * * *"
+  timezone         String // e.g. "America/New_York"
+  userId           String
+  userEmailAddress String
+  isActive         Boolean
+  user             User       @relation(fields: [userId], references: [id])
+  userEmail        UserEmails @relation(fields: [userEmailAddress], references: [email])
 }
 
 model UserEmails {
@@ -79,5 +81,7 @@ model UserEmails {
   email        String @unique
   refreshToken String
   userId       String
+  taskId       String?
+  task         Task[]
   user         User   @relation(fields: [userId], references: [id])
 }

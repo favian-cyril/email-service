@@ -3,23 +3,14 @@ import { google } from 'googleapis';
 import { batchFetchImplementation } from '@jrmdayn/googleapis-batcher';
 import { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from './prisma.service';
-import { Invoice } from '@prisma/client';
 import {
   generateGmailQueryString,
   parseEmailsForInvoiceAmounts,
 } from './utils/mail-parser';
 import { AuthService } from './auth.service';
+import { InvoiceInput } from './types/mail.types';
 
 const fetchImplementation = batchFetchImplementation();
-
-type InvoiceInput = Omit<
-  Invoice,
-  'id' | 'senderEmailAddress' | 'senderEmailId' | 'userId'
-> & { labels: { connect: { id: string }[] } } & {
-  senderEmail: { connect: { id: string } };
-} & {
-  user: { connect: { id: string } };
-};
 
 @Injectable()
 export class GmailService {
