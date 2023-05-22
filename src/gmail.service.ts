@@ -101,12 +101,10 @@ export class GmailService {
                   id: userId,
                 },
               },
-              labels: {
-                connect: [
-                  {
-                    id: sender.labelId,
-                  },
-                ],
+              category: {
+                connect: {
+                  id: sender.categoryId,
+                },
               },
               created: new Date(),
               ...invoice,

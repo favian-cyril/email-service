@@ -22,22 +22,22 @@ model User {
   invoices           Invoice[]
   task               Task[]
   senderEmails       SenderEmail[]
-  labels             Label[]
+  categories         Category[]
 }
 
 model SenderEmail {
-  id      String    @id @default(uuid())
-  userId  String
-  user    User      @relation(fields: [userId], references: [id])
-  email   String
-  labelId String
-  label   Label     @relation(fields: [labelId], references: [id])
-  invoice Invoice[]
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  email      String
+  categoryId String
+  category   Category  @relation(fields: [categoryId], references: [id])
+  invoice    Invoice[]
 
   @@unique([id, email])
 }
 
-model Label {
+model Category {
   id          String        @id @default(uuid())
   userId      String
   user        User          @relation(fields: [userId], references: [id])
@@ -51,7 +51,8 @@ model Invoice {
   id            String      @id @default(uuid())
   emailId       String
   amount        Float
-  labels        Label[]
+  categoryId    String
+  category        Category    @relation(fields: [categoryId], references: [id])
   otherAmounts  Float[]
   emailContent  String
   summary       String
@@ -77,11 +78,11 @@ model Task {
 }
 
 model UserEmails {
-  id           String @id @default(uuid())
-  email        String @unique
+  id           String  @id @default(uuid())
+  email        String  @unique
   refreshToken String
   userId       String
   taskId       String?
   task         Task[]
-  user         User   @relation(fields: [userId], references: [id])
+  user         User    @relation(fields: [userId], references: [id])
 }

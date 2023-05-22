@@ -88,12 +88,12 @@ export class AuthService {
         firstName: 'test',
         lastName: 'test',
         currency: 'Rp',
-        labels: {
+        categories: {
           create: [{ value: 'test label', color: '#ffffff' }],
         },
       },
       include: {
-        labels: true,
+        categories: true,
       },
     });
     await this.prisma.senderEmail.create({
@@ -104,9 +104,9 @@ export class AuthService {
             id: user.id,
           },
         },
-        label: {
+        category: {
           connect: {
-            id: user.labels[0].id,
+            id: user.categories[0].id,
           },
         },
       },
