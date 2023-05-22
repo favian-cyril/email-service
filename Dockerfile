@@ -16,7 +16,6 @@ COPY . .
 # Transpile TypeScript into JavaScript
 RUN yarn generate
 RUN yarn build
-RUN yarn prisma migrate deploy
 
 # Expose port 3000 (or whatever port your app uses) to the Docker host, 
 # this is necessary for the application to be accessible
