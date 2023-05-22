@@ -1,3 +1,5 @@
+import moment from 'moment-timezone';
+
 export function convertCronToUTC(cron: string, timezone: string): string {
   const parts = cron.split(' ');
 
@@ -10,22 +12,17 @@ export function convertCronToUTC(cron: string, timezone: string): string {
     throw new Error('Invalid hours value. Expected a number between 0 and 23.');
   }
 
-  // Create a date at the start of next hour
-  const now = new Date();
-  now.setUTCMinutes(0, 0, 0);
-  now.setUTCHours(now.getUTCHours() + 1);
+  // Get current date and time in the target timezone
+  const nowInTz = moment().tz(timezone);
 
-  const formatter = new Intl.DateTimeFormat('en', {
-    timeZone: timezone,
-    hour12: false,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
-  const partsInTz = formatter.format(now).split(':');
+  // Find out what the current time would be in UTC
+  const nowInUtc = nowInTz.clone().tz('UTC');
 
-  const hoursInTz = parseInt(partsInTz[0], 10);
-  const utcHours = (hours + 24 - hoursInTz) % 24;
+  // Calculate the difference in hours between the target timezone and UTC
+  const offset = nowInUtc.hour() - nowInTz.hour();
+
+  // Adjust the hours in the cron string to UTC
+  const utcHours = (hours + offset + 24) % 24;
 
   parts[2] = utcHours.toString();
 

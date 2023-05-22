@@ -35,6 +35,7 @@
     "google-auth-library": "^8.7.0",
     "googleapis": "^118.0.0",
     "html-to-text": "^9.0.5",
+    "moment-timezone": "^0.5.43",
     "openai": "^3.2.1",
     "prisma": "^4.13.0",
     "redis": "^4.6.6",

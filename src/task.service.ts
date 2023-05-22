@@ -15,7 +15,7 @@ export class TaskService implements OnModuleInit {
     });
     const jobs: Bree.JobOptions[] = tasks.map((task) => ({
       name: task.id,
-      cron: task.schedule,
+      cron: convertCronToUTC(task.schedule, task.timezone),
       path: path.join(__dirname, 'jobs', 'worker.js'),
       worker: {
         workerData: {
@@ -59,7 +59,7 @@ export class TaskService implements OnModuleInit {
     });
     this.bree.add({
       name: id,
-      cron: schedule,
+      cron: convertCronToUTC(schedule, timezone),
       path: path.join(__dirname, 'jobs', 'worker.js'),
       worker: {
         workerData: {
