@@ -31,8 +31,8 @@ model SenderEmail {
   userId     String
   user       User      @relation(fields: [userId], references: [id])
   email      String
-  categoryId String
-  category   Category  @relation(fields: [categoryId], references: [id])
+  categoryId String?
+  category   Category?  @relation(fields: [categoryId], references: [id])
   invoice    Invoice[]
 
   @@unique([id, email])
