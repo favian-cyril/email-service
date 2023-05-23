@@ -31,7 +31,7 @@ export class TaskService implements OnModuleInit {
       root: false,
       jobs,
     });
-    console.log(`${jobs.length} Tasks started`);
+    console.log(`[${new Date()}]: ${jobs.length} Tasks started`);
     await this.bree.start();
   }
 
@@ -56,11 +56,13 @@ export class TaskService implements OnModuleInit {
         },
       },
     });
+    console.log(`[${new Date()}]: Task ID ${id} created`);
   }
 
   async stopAndRemoveTask(id: string): Promise<void> {
     await this.bree.stop(id);
     await this.bree.remove(id);
+    console.log(`[${new Date()}]: Task ID ${id} removed`);
   }
 
   async updateTask(
@@ -72,5 +74,6 @@ export class TaskService implements OnModuleInit {
   ): Promise<void> {
     await this.stopAndRemoveTask(id);
     await this.addTask(id, userId, email, schedule, timezone);
+    console.log(`[${new Date()}]: Task ID ${id} updated`);
   }
 }
