@@ -31,32 +31,17 @@ export class TaskService implements OnModuleInit {
       root: false,
       jobs,
     });
+    console.log(`${jobs.length} Tasks started`);
     await this.bree.start();
   }
 
-  async addTask(
+  addTask(
+    id: string,
     userId: string,
     email: string,
     schedule: string,
     timezone: string,
-  ): Promise<void> {
-    const { id } = await this.prisma.task.create({
-      data: {
-        schedule,
-        timezone,
-        isActive: true,
-        user: {
-          connect: {
-            id: userId,
-          },
-        },
-        userEmail: {
-          connect: {
-            email,
-          },
-        },
-      },
-    });
+  ): void {
     this.bree.add({
       name: id,
       cron: convertCronToUTC(schedule, timezone),
@@ -71,5 +56,21 @@ export class TaskService implements OnModuleInit {
         },
       },
     });
+  }
+
+  stopAndRemoveTask(id: string) {
+    this.bree.stop(id);
+    this.bree.remove(id);
+  }
+
+  updateTask(
+    id: string,
+    userId: string,
+    email: string,
+    schedule: string,
+    timezone: string,
+  ) {
+    this.stopAndRemoveTask(id);
+    this.addTask(id, userId, email, schedule, timezone);
   }
 }
