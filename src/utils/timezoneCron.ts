@@ -7,7 +7,7 @@ export function convertCronToUTC(cron: string, timezone: string): string {
     throw new Error('Invalid cron string. Expected format is "* * * * *".');
   }
 
-  const hours = parseInt(parts[2], 10);
+  const hours = parseInt(parts[1], 10);
   if (isNaN(hours) || hours < 0 || hours > 23) {
     throw new Error('Invalid hours value. Expected a number between 0 and 23.');
   }
@@ -24,7 +24,7 @@ export function convertCronToUTC(cron: string, timezone: string): string {
   // Adjust the hours in the cron string to UTC
   const utcHours = (hours + offset + 24) % 24;
 
-  parts[2] = utcHours.toString();
+  parts[1] = utcHours.toString();
 
   return parts.join(' ');
 }
