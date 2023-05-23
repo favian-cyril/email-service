@@ -35,14 +35,14 @@ export class TaskService implements OnModuleInit {
     await this.bree.start();
   }
 
-  addTask(
+  async addTask(
     id: string,
     userId: string,
     email: string,
     schedule: string,
     timezone: string,
-  ): void {
-    this.bree.add({
+  ): Promise<void> {
+    await this.bree.add({
       name: id,
       cron: convertCronToUTC(schedule, timezone),
       path: path.join(__dirname, 'jobs', 'worker.js'),
@@ -58,19 +58,19 @@ export class TaskService implements OnModuleInit {
     });
   }
 
-  stopAndRemoveTask(id: string) {
-    this.bree.stop(id);
-    this.bree.remove(id);
+  async stopAndRemoveTask(id: string): Promise<void> {
+    await this.bree.stop(id);
+    await this.bree.remove(id);
   }
 
-  updateTask(
+  async updateTask(
     id: string,
     userId: string,
     email: string,
     schedule: string,
     timezone: string,
-  ) {
-    this.stopAndRemoveTask(id);
-    this.addTask(id, userId, email, schedule, timezone);
+  ): Promise<void> {
+    await this.stopAndRemoveTask(id);
+    await this.addTask(id, userId, email, schedule, timezone);
   }
 }

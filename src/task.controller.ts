@@ -6,23 +6,23 @@ export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @Post('add')
-  addTask(
+  async addTask(
     @Body()
     body: any,
-  ): void {
+  ): Promise<void> {
     const { userId, email, schedule, timezone, id } = body;
-    this.taskService.addTask(id, userId, email, schedule, timezone);
+    await this.taskService.addTask(id, userId, email, schedule, timezone);
   }
 
   @Post('remove')
-  removeTask(@Body() body: any): void {
+  async removeTask(@Body() body: any): Promise<void> {
     const { id } = body;
-    this.taskService.stopAndRemoveTask(id);
+    await this.taskService.stopAndRemoveTask(id);
   }
 
   @Post('update')
-  updateTask(@Body() body: any): void {
+  async updateTask(@Body() body: any): Promise<void> {
     const { userId, email, schedule, timezone, id } = body;
-    this.taskService.updateTask(id, userId, email, schedule, timezone);
+    await this.taskService.updateTask(id, userId, email, schedule, timezone);
   }
 }
