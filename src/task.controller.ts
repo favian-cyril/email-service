@@ -10,7 +10,6 @@ export class TaskController {
     @Body()
     body: any,
   ): Promise<void> {
-    console.log(body);
     const { userId, email, schedule, timezone } = body;
     await this.taskService.addTask(userId, email, schedule, timezone);
   }

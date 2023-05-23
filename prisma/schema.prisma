@@ -15,7 +15,6 @@ model User {
   email              String        @unique
   firstName          String
   lastName           String
-  password           String
   currency           String
   additionalKeywords String[]
   userEmails         UserEmails[]
