@@ -108,14 +108,18 @@ async function getInbox() {
       });
     })
     .catch((err) => {
-      if (err === 'no-new-mail') console.warn('No new mail detected');
-      else console.error('The API returned an error:', err);
+      if (err === 'no-new-mail') Promise.reject('No new mail detected');
+      else Promise.reject(err);
     });
   await Promise.all(
     result.map((invoice) => prisma.invoice.create({ data: invoice })),
   );
 }
 
-getInbox().then(() => {
-  parentPort.postMessage('Job completed!');
-});
+getInbox()
+  .then(() => {
+    parentPort.postMessage('Job completed!');
+  })
+  .catch((err) => {
+    parentPort.postMessage(err);
+  });
