@@ -108,8 +108,8 @@ async function getInbox() {
       });
     })
     .catch((err) => {
-      if (err === 'no-new-mail') Promise.reject('No new mail detected');
-      else Promise.reject(err);
+      if (err === 'no-new-mail') return Promise.reject('No new mail detected');
+      else return Promise.reject(err);
     });
   await Promise.all(
     result.map((invoice) => prisma.invoice.create({ data: invoice })),
