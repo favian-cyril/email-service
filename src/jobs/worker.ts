@@ -98,7 +98,7 @@ async function getInbox() {
             },
             category: {
               connect: {
-                id: sender.categoryId,
+                id: sender.categoryId || undefined,
               },
             },
             created: new Date(),
