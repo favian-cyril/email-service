@@ -52,8 +52,8 @@ model Invoice {
   id            String      @id @default(dbgenerated("uuid_generate_v4()"))
   emailId       String
   amount        Float
-  categoryId    String
-  category        Category    @relation(fields: [categoryId], references: [id])
+  categoryId    String?
+  category      Category?    @relation(fields: [categoryId], references: [id])
   otherAmounts  Float[]
   emailContent  String
   summary       String
