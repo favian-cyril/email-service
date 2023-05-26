@@ -16,7 +16,7 @@ export function convertCronToUTC(cron: string, timezone: string): string {
   const nowInTz = moment().tz(timezone);
 
   // Find out what the current time would be in UTC
-  const nowInUtc = nowInTz.clone().tz('UTC');
+  const nowInUtc = nowInTz.clone().tz(moment.tz.guess());
 
   // Calculate the difference in hours between the target timezone and UTC
   const offset = nowInUtc.hour() - nowInTz.hour();

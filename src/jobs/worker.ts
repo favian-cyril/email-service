@@ -61,7 +61,8 @@ async function getInbox() {
       ),
     });
     // Construct an array of requests to retrieve the contents of each message
-    if (!response.data.messages.length) return Promise.reject('no-new-mail');
+    if (!response.data.messages || !response.data.messages.length)
+      return Promise.reject('no-new-mail');
     const requests = response.data.messages.map((message) => {
       return gmailClient.users.messages.get({
         userId: 'me',

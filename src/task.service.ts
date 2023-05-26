@@ -31,14 +31,15 @@ export class TaskService implements OnModuleInit {
       root: false,
       jobs,
     });
-    console.log(`[${new Date()}]: ${jobs.length} Tasks started`);
-    await this.bree.start();
+    console.log(jobs);
     this.bree.on('worker created', (name) => {
-      console.log(`[${new Date()}]: Task ID ${name} created`);
+      console.log(`[${new Date()}]: Task ID ${name} started`);
     });
     this.bree.on('worker deleted', (name) => {
-      console.log(`[${new Date()}]: Task ID ${name} removed`);
+      console.log(`[${new Date()}]: Task ID ${name} stopped`);
     });
+    console.log(`[${new Date()}]: ${jobs.length} Tasks started`);
+    await this.bree.start();
   }
 
   async addTask(
@@ -62,11 +63,13 @@ export class TaskService implements OnModuleInit {
         },
       },
     });
+    console.log(`[${new Date()}]: Task ID ${id} added`);
   }
 
   async stopAndRemoveTask(id: string): Promise<void> {
     await this.bree.stop(id);
     await this.bree.remove(id);
+    console.log(`[${new Date()}]: Task ID ${id} removed`);
   }
 
   async updateTask(
