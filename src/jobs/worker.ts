@@ -62,7 +62,7 @@ async function getInbox() {
     });
     // Construct an array of requests to retrieve the contents of each message
     if (!response.data.messages || !response.data.messages.length)
-      return Promise.reject('no-new-mail');
+      return Promise.reject('No new mail detected');
     const requests = response.data.messages.map((message) => {
       return gmailClient.users.messages.get({
         userId: 'me',
@@ -108,7 +108,6 @@ async function getInbox() {
       }
     });
   } catch (err) {
-    if (err === 'no-new-mail') return Promise.reject('No new mail detected');
     else return Promise.reject(err);
   }
   await Promise.all(

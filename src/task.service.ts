@@ -31,7 +31,6 @@ export class TaskService implements OnModuleInit {
       root: false,
       jobs,
     });
-    console.log(jobs);
     this.bree.on('worker created', (name) => {
       console.log(`[${new Date()}]: Task ID ${name} started`);
     });
@@ -63,6 +62,7 @@ export class TaskService implements OnModuleInit {
         },
       },
     });
+    this.bree.start();
     console.log(`[${new Date()}]: Task ID ${id} added`);
   }
 
