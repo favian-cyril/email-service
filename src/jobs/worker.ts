@@ -108,7 +108,7 @@ async function getInbox() {
       }
     });
   } catch (err) {
-    else return Promise.reject(err);
+    return Promise.reject(err);
   }
   await Promise.all(
     result.map((invoice) => prisma.invoice.create({ data: invoice })),
