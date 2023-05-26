@@ -24,7 +24,7 @@ export class GmailService {
     );
   }
 
-  async getInbox(email: string, userId: string): Promise<void> {
+  async getInbox(email: string, userId: string, date: string): Promise<void> {
     const token = await this.auth.getAccessToken(email);
     this.oauth2Client.setCredentials({
       refresh_token: token,
@@ -61,7 +61,7 @@ export class GmailService {
         userId: 'me',
         q: generateGmailQueryString(
           allSenderEmails.map((i) => i.email),
-          new Date(),
+          new Date(date),
           ['invoice', 'receipt', ...additionalKeywords],
         ),
       })

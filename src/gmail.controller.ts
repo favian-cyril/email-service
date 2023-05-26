@@ -1,15 +1,16 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { GmailService } from './gmail.service';
 
 @Controller('gmail')
 export class GmailController {
   constructor(private readonly gmailService: GmailService) {}
 
-  @Get()
+  @Post()
   async getInbox(
-    @Query('email') email: string,
-    @Query('userId') userId: string,
+    @Body()
+    body: any,
   ): Promise<void> {
-    await this.gmailService.getInbox(email, userId);
+    const { email, userId, date } = body;
+    await this.gmailService.getInbox(email, userId, date);
   }
 }
