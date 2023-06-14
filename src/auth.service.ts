@@ -59,14 +59,15 @@ export class AuthService {
       where: { id: userId },
       data: {
         userEmails: {
-          connectOrCreate: {
-            where: {
-              email: email,
-            },
+          upsert: {
             create: {
               email: email,
               refreshToken: encryptedToken,
             },
+            update: {
+              refreshToken: encryptedToken,
+            },
+            where: { email: email },
           },
         },
       },
