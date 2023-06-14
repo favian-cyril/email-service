@@ -111,6 +111,7 @@ export class GmailService {
                   }
                 : {}),
               created: new Date(),
+              updatedAt: new Date(),
               ...invoice,
             });
           }

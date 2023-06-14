@@ -103,6 +103,7 @@ async function getInbox() {
               }
             : {}),
           created: new Date(),
+          updatedAt: new Date(),
           ...invoice,
         });
       }

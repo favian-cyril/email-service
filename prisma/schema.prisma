@@ -24,7 +24,7 @@ model User {
   task               Task[]
   senderEmails       SenderEmail[]
   categories         Category[]
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model SenderEmail {
@@ -35,7 +35,7 @@ model SenderEmail {
   categoryId String?
   category   Category?  @relation(fields: [categoryId], references: [id])
   invoice    Invoice[]
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@unique([id, email])
 }
@@ -48,7 +48,7 @@ model Category {
   value       String
   color       String
   invoices    Invoice[]
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Invoice {
@@ -68,7 +68,7 @@ model Invoice {
   emailCreated  DateTime
   created       DateTime    @default(now())
   user          User        @relation(fields: [userId], references: [id])
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Task {
@@ -80,7 +80,7 @@ model Task {
   isActive         Boolean
   user             User       @relation(fields: [userId], references: [id])
   userEmail        UserEmails @relation(fields: [userEmailAddress], references: [email])
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model UserEmails {
@@ -91,5 +91,5 @@ model UserEmails {
   taskId       String?
   task         Task[]
   user         User    @relation(fields: [userId], references: [id])
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
