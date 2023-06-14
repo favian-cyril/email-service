@@ -34,16 +34,21 @@ export class AuthService {
 
   async handleCallback(code: string, state: string) {
     // Exchange code for tokens
-    const { tokens } = await this.oauth2Client.getToken(code);
+    let tokens;
+    try {
+      tokens = await this.oauth2Client.getToken(code);
+    } catch (e) {
+      console.error(e);
+    }
 
     // Parse the state parameter to get the user ID
     const { userId } = JSON.parse(decodeURI(state));
 
-    const encryptedToken = encrypt(tokens.refresh_token);
+    const encryptedToken = encrypt(tokens.tokens.refresh_token);
 
     // set credentials
     this.oauth2Client.setCredentials({
-      access_token: tokens.access_token,
+      access_token: tokens.tokens.access_token,
     });
 
     // request user info
