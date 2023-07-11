@@ -21,8 +21,11 @@
     "generate": "rm -rf ./node_modules/@prisma/client && npx prisma generate"
   },
   "dependencies": {
+    "@azure/identity": "^3.2.3",
     "@breejs/ts-worker": "^2.0.0",
     "@jrmdayn/googleapis-batcher": "^0.3.0",
+    "@microsoft/microsoft-graph-client": "^3.0.5",
+    "@microsoft/microsoft-graph-types": "^2.35.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",

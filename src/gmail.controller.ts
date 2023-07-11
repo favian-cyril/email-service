@@ -1,16 +1,18 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { GmailService } from './gmail.service';
 
 @Controller('gmail')
 export class GmailController {
-  constructor(private readonly gmailService: GmailService) {}
-
-  @Post()
-  async getInbox(
-    @Body()
-    body: any,
+  constructor(private authService: GmailService) {}
+  @Get('url-gmail')
+  async getAuthUrl(@Query('userId') userId: string): Promise<string> {
+    return this.authService.generateAuthUrl(userId);
+  }
+  @Get('callback-gmail')
+  async callback(
+    @Query('code') code: string,
+    @Query('state') state: string,
   ): Promise<void> {
-    const { email, userId, date } = body;
-    await this.gmailService.getInbox(email, userId, date);
+    return this.authService.handleCallback(code, state);
   }
 }

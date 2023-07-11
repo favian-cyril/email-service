@@ -21,9 +21,9 @@ export class TaskService implements OnModuleInit {
         workerData: {
           email: task.userEmailAddress,
           userId: task.userId,
-          clientId: process.env.CLIENT_ID,
-          clientSecret: process.env.CLIENT_SECRET,
-          redirectUrl: process.env.REDIRECT_URL,
+          clientId: process.env.CLIENT_ID_GMAIL,
+          clientSecret: process.env.CLIENT_SECRET_GMAIL,
+          redirectUrl: process.env.BASE_URL + '/auth/callback-gmail',
         },
       },
     }));
@@ -56,9 +56,9 @@ export class TaskService implements OnModuleInit {
         workerData: {
           email: email,
           userId,
-          clientId: process.env.CLIENT_ID,
-          clientSecret: process.env.CLIENT_SECRET,
-          redirectUrl: process.env.REDIRECT_URL,
+          clientId: process.env.CLIENT_ID_GMAIL,
+          clientSecret: process.env.CLIENT_SECRET_GMAIL,
+          redirectUrl: process.env.BASE_URL + '/auth/callback-gmail',
         },
       },
     });

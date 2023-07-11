@@ -86,6 +86,7 @@ model Task {
 model UserEmails {
   id           String   @id @default(dbgenerated("uuid_generate_v4()"))
   email        String   @unique
+  provider     String   @default("gmail")
   refreshToken String
   userId       String
   taskId       String?

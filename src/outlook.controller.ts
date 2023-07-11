@@ -1,9 +1,9 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { OutlookService } from './outlook.service';
 
-@Controller('auth')
+@Controller('outlook')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: OutlookService) {}
   @Get('url')
   async getAuthUrl(@Query('userId') userId: string): Promise<string> {
     return this.authService.generateAuthUrl(userId);
@@ -14,10 +14,5 @@ export class AuthController {
     @Query('state') state: string,
   ): Promise<void> {
     return this.authService.handleCallback(code, state);
-  }
-  @Get('register')
-  async register(): Promise<string> {
-    const user = await this.authService.generateTestUser();
-    return user.id;
   }
 }
